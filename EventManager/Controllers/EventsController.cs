@@ -20,9 +20,29 @@ namespace EventManager.Controllers
         }
 
         // GET: Events
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, string region, string keyWords)
         {
-            return View(await _context.Event.ToListAsync());
+            var events = from m in _context.Event
+                        select m;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                events = events.Where(s => s.Title.Contains(searchString));
+            }
+            if (!String.IsNullOrEmpty(keyWords))
+            {
+                string[] words = keyWords.Split(' ');
+                foreach(string word in words)
+                {
+                    events = events.Where(s => s.KeyWords.Contains(word));
+                }
+            }
+            if (!String.IsNullOrEmpty(region))
+            {
+                events = events.Where(s => s.Region.Contains(region));
+            }
+
+            return View(await events.ToListAsync());
         }
 
         // GET: Events/Details/5
@@ -54,7 +74,7 @@ namespace EventManager.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,Type,StartDate,EndDate,Price")] Event @event)
+        public async Task<IActionResult> Create([Bind("Id,Title,Description,Type,KeyWords,Region,StartDate,EndDate,Price")] Event @event)
         {
             if (ModelState.IsValid)
             {
@@ -86,7 +106,7 @@ namespace EventManager.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Type,StartDate,EndDate,Price")] Event @event)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Type,KeyWords,Region,StartDate,EndDate,Price")] Event @event)
         {
             if (id != @event.Id)
             {
