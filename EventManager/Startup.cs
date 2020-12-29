@@ -10,6 +10,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using EventManager.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
 
 namespace EventManager
 {
@@ -25,6 +27,15 @@ namespace EventManager
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            string connection = Configuration.GetConnectionString("MvcEventContext");
+            services.AddDbContext<UserContext>(options => options.UseSqlServer(connection));
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options => //CookieAuthenticationOptions
+                {
+                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
+                });
+
             services.AddControllersWithViews();
 
             services.AddDbContext<MvcEventContext>(options =>
@@ -49,6 +60,7 @@ namespace EventManager
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

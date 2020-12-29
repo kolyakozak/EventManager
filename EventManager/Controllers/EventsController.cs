@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using EventManager.Data;
 using EventManager.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EventManager.Controllers
 {
+    [Authorize]
     public class EventsController : Controller
     {
         private readonly MvcEventContext _context;
@@ -42,12 +44,29 @@ namespace EventManager.Controllers
                 events = events.Where(s => s.Region.Contains(region));
             }
 
+            ViewData["UserName"] = User.Identity.Name;
+
+            return View(await events.ToListAsync());
+        }
+
+        //GET: My
+        public async Task<IActionResult> My()
+        {
+            var events = from m in _context.Event
+                         select m;
+            string UserName = User.Identity.Name;
+            ViewData["UserName"] = User.Identity.Name;
+            if (!String.IsNullOrEmpty(UserName))
+            {
+                events = events.Where(s => s.UserName == UserName);
+            }
             return View(await events.ToListAsync());
         }
 
         // GET: Events/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            ViewData["UserName"] = User.Identity.Name;
             if (id == null)
             {
                 return NotFound();
@@ -66,6 +85,7 @@ namespace EventManager.Controllers
         // GET: Events/Create
         public IActionResult Create()
         {
+            ViewData["UserName"] = User.Identity.Name;
             return View();
         }
 
@@ -76,8 +96,10 @@ namespace EventManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Description,Type,KeyWords,Region,StartDate,EndDate,Price")] Event @event)
         {
+            ViewData["UserName"] = User.Identity.Name;
             if (ModelState.IsValid)
             {
+                @event.UserName = User.Identity.Name;
                 _context.Add(@event);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -92,7 +114,7 @@ namespace EventManager.Controllers
             {
                 return NotFound();
             }
-
+            ViewData["UserName"] = User.Identity.Name;
             var @event = await _context.Event.FindAsync(id);
             if (@event == null)
             {
@@ -112,11 +134,12 @@ namespace EventManager.Controllers
             {
                 return NotFound();
             }
-
+            ViewData["UserName"] = User.Identity.Name;
             if (ModelState.IsValid)
             {
                 try
                 {
+                    @event.UserName = User.Identity.Name;
                     _context.Update(@event);
                     await _context.SaveChangesAsync();
                 }
@@ -143,7 +166,7 @@ namespace EventManager.Controllers
             {
                 return NotFound();
             }
-
+            ViewData["UserName"] = User.Identity.Name;
             var @event = await _context.Event
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (@event == null)

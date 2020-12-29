@@ -30,7 +30,8 @@ namespace EventManager.Models
                         Type = "Event",
                         Region = "Kyiv",
                         KeyWords = "Culture Rest Holiday",
-                        Price = 99.99M
+                        Price = 99.99M,
+                        UserName = "kozak.k1892@gmail.com"
                     }
 
                 );
